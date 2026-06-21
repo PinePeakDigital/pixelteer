@@ -20,6 +20,13 @@ export type PathResult = {
   ms: number;
 };
 
+/**
+ * Compare a single path across two base URLs: capture both pages, diff them,
+ * and persist the originals plus the rendered diff only when the pixel
+ * difference clears `saveThreshold`. Returns the path, its diff count, and how
+ * long the comparison took. The pixel comparison itself lives in `diff`; this
+ * orchestrates capture and the save-if-over-threshold decision.
+ */
 export async function handlePath({
   page,
   path,
