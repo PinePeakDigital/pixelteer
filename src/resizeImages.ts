@@ -39,9 +39,13 @@ export default async function resizeImages({
   const out1 = shouldResize1 ? resizeImage(sharp1, width, height) : sharp1;
   const out2 = shouldResize2 ? resizeImage(sharp2, width, height) : sharp2;
 
+  // pixelmatch requires 4-channel RGBA data (length === width * height * 4).
+  // Opaque PNG screenshots decode to 3-channel RGB, which makes pixelmatch
+  // throw "Image sizes do not match". ensureAlpha() adds an opaque alpha
+  // channel when one is absent (no-op when already present), guaranteeing RGBA.
   return {
-    out1: await out1.raw().toBuffer(),
-    out2: await out2.raw().toBuffer(),
+    out1: await out1.ensureAlpha().raw().toBuffer(),
+    out2: await out2.ensureAlpha().raw().toBuffer(),
     width,
     height,
   };
