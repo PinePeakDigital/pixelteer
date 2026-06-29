@@ -31,13 +31,20 @@ async function captureWithRetry(page: Page, url: string): Promise<Buffer> {
       // Use a dynamic delay based on the attempt count
       await new Promise((resolve) => setTimeout(resolve, delay));
 
+      let timeoutId: NodeJS.Timeout | undefined;
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
+        timeoutId = setTimeout(() => {
           reject(new Error("Timeout"));
         }, 10000);
       });
 
-      await Promise.race([loadingPromise, timeoutPromise]);
+      try {
+        await Promise.race([loadingPromise, timeoutPromise]);
+      } finally {
+        // Clear the timer on the success path too; a live handle keeps Node's
+        // event loop open and makes the CLI hang after the last capture.
+        clearTimeout(timeoutId);
+      }
 
       const buffer = await page.screenshot({
         fullPage: true,
@@ -70,19 +77,26 @@ export async function createPuppeteerSession(): Promise<CaptureSession> {
     headless: true,
     handleSIGINT: true,
   });
-  const page = await browser.newPage();
+  try {
+    const page = await browser.newPage();
 
-  await page.setRequestInterception(true);
-  page.on("request", (req) => {
-    if (shouldAbort(req.resourceType())) {
-      req.abort();
-    } else {
-      req.continue();
-    }
-  });
+    await page.setRequestInterception(true);
+    page.on("request", (req) => {
+      if (shouldAbort(req.resourceType())) {
+        req.abort();
+      } else {
+        req.continue();
+      }
+    });
 
-  return {
-    capture: (url) => captureWithRetry(page, url),
-    close: () => browser.close(),
-  };
+    return {
+      capture: (url) => captureWithRetry(page, url),
+      close: () => browser.close(),
+    };
+  } catch (error) {
+    // Setup failed after launch; close the browser so the caller doesn't lose
+    // the close handle and leak the Chromium process.
+    await browser.close();
+    throw error;
+  }
 }
