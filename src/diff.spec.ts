@@ -10,7 +10,80 @@ vi.unmock("./resizeImages");
 
 import sharp from "sharp";
 import { PNG } from "pngjs";
-import { diff } from "./diff.js";
+import { diff, boundingBox, padBox } from "./diff.js";
+
+// Build an RGBA buffer with a solid-red rectangle (pixelmatch's diffColor) on
+// an otherwise grey background — the shape boundingBox scans.
+function diffData(
+  width: number,
+  height: number,
+  rect: { left: number; top: number; width: number; height: number }
+): Uint8Array {
+  const data = new Uint8Array(width * height * 4).fill(200);
+  for (let y = rect.top; y < rect.top + rect.height; y++) {
+    for (let x = rect.left; x < rect.left + rect.width; x++) {
+      const i = (y * width + x) * 4;
+      data[i] = 255;
+      data[i + 1] = 0;
+      data[i + 2] = 0;
+      data[i + 3] = 255;
+    }
+  }
+  return data;
+}
+
+describe("boundingBox", () => {
+  it("returns null when no pixel is the diff colour", () => {
+    const data = new Uint8Array(4 * 4 * 4).fill(200);
+    expect(boundingBox(data, 4, 4)).toBe(null);
+  });
+
+  it("returns null when the buffer is shorter than the image", () => {
+    expect(boundingBox(new Uint8Array(0), 4, 4)).toBe(null);
+  });
+
+  it("tightly bounds a red rectangle", () => {
+    const data = diffData(10, 8, { left: 3, top: 2, width: 4, height: 3 });
+    expect(boundingBox(data, 10, 8)).toEqual({
+      left: 3,
+      top: 2,
+      width: 4,
+      height: 3,
+    });
+  });
+
+  it("bounds scattered diff pixels by their extremes", () => {
+    const data = new Uint8Array(5 * 5 * 4).fill(200);
+    const paint = (x: number, y: number) => {
+      const i = (y * 5 + x) * 4;
+      data[i] = 255;
+      data[i + 1] = 0;
+      data[i + 2] = 0;
+    };
+    paint(1, 4);
+    paint(4, 0);
+    expect(boundingBox(data, 5, 5)).toEqual({
+      left: 1,
+      top: 0,
+      width: 4,
+      height: 5,
+    });
+  });
+});
+
+describe("padBox", () => {
+  it("grows the box by the padding on every side", () => {
+    expect(padBox({ left: 5, top: 5, width: 4, height: 4 }, 2, 100, 100)).toEqual(
+      { left: 3, top: 3, width: 8, height: 8 }
+    );
+  });
+
+  it("clamps to the image bounds", () => {
+    expect(padBox({ left: 1, top: 1, width: 8, height: 8 }, 5, 10, 10)).toEqual(
+      { left: 0, top: 0, width: 10, height: 10 }
+    );
+  });
+});
 
 // A solid-colour, fully opaque (3-channel RGB) PNG — the shape Puppeteer
 // screenshots take, and the one that used to make pixelmatch throw.
