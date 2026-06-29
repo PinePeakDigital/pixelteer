@@ -1,11 +1,10 @@
 import fs from "fs";
-import takeScreenshot from "./saveScreenshot.js";
 import { diff } from "./diff.js";
-import { Page } from "puppeteer";
+import { Capture } from "./capture.js";
 import { makeOutPath } from "./makeOutPath.js";
 
 type Options = {
-  page: Page;
+  capture: Capture;
   path: string;
   baseUrl1: string;
   baseUrl2: string;
@@ -28,7 +27,7 @@ export type PathResult = {
  * orchestrates capture and the save-if-over-threshold decision.
  */
 export async function handlePath({
-  page,
+  capture,
   path,
   baseUrl1,
   baseUrl2,
@@ -37,15 +36,8 @@ export async function handlePath({
   saveThreshold = 10,
 }: Options): Promise<PathResult> {
   const start = new Date().getTime();
-  const buffer1 = await takeScreenshot({
-    page,
-    url: `${baseUrl1}${path}`,
-  });
-
-  const buffer2 = await takeScreenshot({
-    page,
-    url: `${baseUrl2}${path}`,
-  });
+  const buffer1 = await capture(`${baseUrl1}${path}`);
+  const buffer2 = await capture(`${baseUrl2}${path}`);
 
   const { diffCount, diffPng } = await diff({
     buffer1,
