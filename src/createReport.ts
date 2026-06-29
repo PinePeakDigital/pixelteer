@@ -8,6 +8,13 @@ type Options = {
   outDir: string;
 };
 
+const escapeHtml = (value: string): string =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+
 export function createReport({
   shotsDir,
   baseUrl1,
@@ -17,22 +24,25 @@ export function createReport({
   const files = fs.readdirSync(shotsDir);
 
   const sets = files.reduce((acc, file) => {
-    const { path } = decode(file);
-    if (!path) return acc;
-    const value = acc[path] || [];
+    const set = decode(file);
+    if (!set) return acc;
+    const value = acc[set.path] || [];
     value.push(file);
-    acc[path] = value;
+    acc[set.path] = value;
     return acc;
   }, {} as Record<string, string[]>);
 
   const panes = Object.entries(sets).map(([p, value]) => {
+    const safePath = escapeHtml(p);
+    const safeHref1 = escapeHtml(`${baseUrl1}${p}`);
+    const safeHref2 = escapeHtml(`${baseUrl2}${p}`);
     return `
-            <div class="set" data-path="${p}">
+            <div class="set" data-path="${safePath}">
                 <div class="header">
-                <h2>${p}</h2>
+                <h2>${safePath}</h2>
                 <p>
-                    <a href="${baseUrl1}${p}" target="_blank">1</a> |
-                    <a href="${baseUrl2}${p}" target="_blank">2</a>
+                    <a href="${safeHref1}" target="_blank">1</a> |
+                    <a href="${safeHref2}" target="_blank">2</a>
                 </p>
                 </div>
                 <div class="shots">

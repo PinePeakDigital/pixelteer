@@ -12,14 +12,24 @@ export type Kind = "1" | "2" | "diff";
 const encodePath = (path: string): string =>
   encodeURIComponent(path).replaceAll(".", "%2E");
 
+/** Encode a URL path + image kind into one filesystem-safe filename. */
 export function encode(path: string, kind: Kind): string {
   return `${encodePath(path)}.${kind}.png`;
 }
 
-export function decode(filename: string): { path: string; kind: string } {
-  const parts = filename.split(".");
-  parts.pop(); // "png"
-  const kind = parts.pop() ?? "";
-  const path = decodeURIComponent(parts.join("."));
-  return { path, kind };
+/**
+ * Decode a filename produced by `encode` back to its path + kind, or return
+ * `null` for anything outside the contract — `createReport` feeds every entry
+ * in the shots directory through here, so stray files must be skipped rather
+ * than throw (e.g. a malformed `%`-escape) or group under a bogus path.
+ */
+export function decode(filename: string): { path: string; kind: Kind } | null {
+  const match = /^(.*)\.(1|2|diff)\.png$/.exec(filename);
+  if (!match) return null;
+
+  try {
+    return { path: decodeURIComponent(match[1]), kind: match[2] as Kind };
+  } catch {
+    return null;
+  }
 }
