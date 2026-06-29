@@ -18,6 +18,15 @@ export function encode(path: string, kind: Kind): string {
 }
 
 /**
+ * Filename for a cropped, diff-localized region. The suffix is `.crop<kind>`
+ * (no dot before the kind), so `decode` — which requires a literal `.<kind>.`
+ * — deliberately skips these, keeping crops out of the full-image report.
+ */
+export function encodeCrop(path: string, kind: Kind): string {
+  return `${encodePath(path)}.crop${kind}.png`;
+}
+
+/**
  * Decode a filename produced by `encode` back to its path + kind, or return
  * `null` for anything outside the contract — `createReport` feeds every entry
  * in the shots directory through here, so stray files must be skipped rather

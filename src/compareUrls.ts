@@ -18,6 +18,14 @@ export type CompareUrlsOptions = {
   createSession?: CreateCaptureSession;
 };
 
+// One row of the machine-readable summary.json written per run.
+export type SummaryEntry = {
+  path: string;
+  diffPx: number;
+  pct: number;
+  crops?: { before: string; after: string; diff: string };
+};
+
 /**
  * Compare a set of paths across two base URLs. Guards the output directory
  * (created if missing; must be empty unless `force`), opens one capture session,
@@ -50,10 +58,14 @@ export async function compareUrls({
   }
 
   const { capture, close } = await createSession();
+  const total = paths.length;
+
+  // One entry per successfully-compared path, plus crop filenames for pages
+  // that cleared the save threshold. Written in `finally` so a mid-run failure
+  // (e.g. a rethrowing onError) still leaves a summary of what did complete.
+  const summary: SummaryEntry[] = [];
 
   try {
-    const total = paths.length;
-
     for (const [i, path] of paths.entries()) {
       await handlePath({
         capture,
@@ -64,10 +76,19 @@ export async function compareUrls({
         diffThreshold,
         saveThreshold,
       })
-        .then((result) => onSuccess({ ...result, total, current: i + 1 }))
+        .then((result) => {
+          summary.push({
+            path: result.path,
+            diffPx: result.diff,
+            pct: result.pct,
+            ...(result.crops ? { crops: result.crops } : {}),
+          });
+          onSuccess({ ...result, total, current: i + 1 });
+        })
         .catch(onError);
     }
   } finally {
+    fs.writeFileSync(`${outDir}/summary.json`, JSON.stringify(summary, null, 2));
     await close();
   }
 }
