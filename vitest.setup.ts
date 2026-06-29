@@ -1,8 +1,6 @@
 import { vi } from "vitest";
 
 vi.mock("./src/createReport");
-vi.mock("./src/getSitemap");
-vi.mock("./src/readScreenshot");
 
 vi.mock("./src/resizeImages", () => ({
   default: vi.fn(() =>
