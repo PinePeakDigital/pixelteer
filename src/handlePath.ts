@@ -11,6 +11,7 @@ type Options = {
   outDir: string;
   diffThreshold?: number;
   saveThreshold?: number;
+  maskSelectors?: string[];
 };
 
 export type PathResult = {
@@ -34,10 +35,11 @@ export async function handlePath({
   outDir,
   diffThreshold,
   saveThreshold = 10,
+  maskSelectors,
 }: Options): Promise<PathResult> {
   const start = new Date().getTime();
-  const buffer1 = await capture(`${baseUrl1}${path}`);
-  const buffer2 = await capture(`${baseUrl2}${path}`);
+  const buffer1 = await capture(`${baseUrl1}${path}`, maskSelectors);
+  const buffer2 = await capture(`${baseUrl2}${path}`, maskSelectors);
 
   const { diffCount, diffPng } = await diff({
     buffer1,
