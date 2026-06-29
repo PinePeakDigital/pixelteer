@@ -1,7 +1,6 @@
 import { vi } from "vitest";
 
 vi.mock("./src/createReport");
-vi.mock("./src/saveScreenshot");
 
 vi.mock("./src/resizeImages", () => ({
   default: vi.fn(() =>
@@ -19,18 +18,5 @@ vi.mock("fs");
 vi.mock("pngjs");
 vi.mock("sharp");
 
-vi.mock("puppeteer", () => ({
-  default: {
-    launch: vi.fn(async () => ({
-      newPage: vi.fn(async () => ({
-        setViewport: vi.fn(),
-        goto: vi.fn(),
-        screenshot: vi.fn(),
-        close: vi.fn(),
-        setRequestInterception: vi.fn(),
-        on: vi.fn(),
-      })),
-      close: vi.fn(),
-    })),
-  },
-}));
+// No global puppeteer mock: the capture seam (compareUrls' `createSession`) is
+// injected with a fake session in tests, so nothing here launches a browser.

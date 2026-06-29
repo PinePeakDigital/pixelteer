@@ -4,17 +4,26 @@ import { compareUrls, CompareUrlsOptions } from "./compareUrls.js";
 import resizeImages from "./resizeImages.js";
 import fs from "fs";
 
+// A real second capture adapter — the fake — exercising orchestration over the
+// seam without launching Puppeteer.
+const fakeSession = () =>
+  Promise.resolve({
+    capture: vi.fn(async () => Buffer.from("")),
+    close: vi.fn(async () => {}),
+  });
+
 async function run(options: Partial<CompareUrlsOptions> = {}) {
   return compareUrls({
     baseUrl1: "the_base_url_1",
     baseUrl2: "the_base_url_2",
     paths: ["the_path"],
     outDir: "the_out_dir",
+    createSession: fakeSession,
     ...options,
   });
 }
 
-describe("puppeteer", () => {
+describe("compareUrls", () => {
   beforeEach(() => {
     vi.mocked(fs.readdirSync).mockReturnValue([]);
   });
@@ -60,7 +69,17 @@ describe("puppeteer", () => {
 
     expect(fs.writeFileSync).toBeCalledWith(
       "the_out_dir/the_path.1.png",
-      undefined
+      Buffer.from("")
     );
+  });
+
+  it("closes the session when done", async () => {
+    const close = vi.fn(async () => {});
+    await run({
+      createSession: () =>
+        Promise.resolve({ capture: vi.fn(async () => Buffer.from("")), close }),
+    });
+
+    expect(close).toBeCalledTimes(1);
   });
 });
