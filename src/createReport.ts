@@ -1,4 +1,5 @@
 import fs from "fs";
+import { decode } from "./screenshotSet.js";
 
 type Options = {
   baseUrl1: string;
@@ -16,16 +17,15 @@ export function createReport({
   const files = fs.readdirSync(shotsDir);
 
   const sets = files.reduce((acc, file) => {
-    const key = file.split(".")[0];
-    if (!key) return acc;
-    const value = acc[key] || [];
+    const { path } = decode(file);
+    if (!path) return acc;
+    const value = acc[path] || [];
     value.push(file);
-    acc[key] = value;
+    acc[path] = value;
     return acc;
   }, {} as Record<string, string[]>);
 
-  const panes = Object.entries(sets).map(([key, value]) => {
-    const p = key.replaceAll("_", "/");
+  const panes = Object.entries(sets).map(([p, value]) => {
     return `
             <div class="set" data-path="${p}">
                 <div class="header">
