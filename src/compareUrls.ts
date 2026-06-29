@@ -1,7 +1,7 @@
 import fs from "fs";
 import { handlePath, PathResult } from "./handlePath.js";
 import { CreateCaptureSession } from "./capture.js";
-import { createPuppeteerSession } from "./puppeteerCapture.js";
+import { createPuppeteerSession, LaunchOptions } from "./puppeteerCapture.js";
 
 export type CompareUrlsOptions = {
   baseUrl1: string;
@@ -13,6 +13,9 @@ export type CompareUrlsOptions = {
   saveThreshold?: number;
   onSuccess?: (data: PathResult & { total: number; current: number }) => void;
   onError?: (e: unknown) => void;
+  // Forwarded to puppeteer.launch on the default backend — set `executablePath`
+  // or `channel` here to pin Chrome. Ignored when `createSession` is overridden.
+  launchOptions?: LaunchOptions;
   // The capture backend. Defaults to Puppeteer; tests/alternate backends inject
   // their own session over the capture seam.
   createSession?: CreateCaptureSession;
@@ -37,7 +40,8 @@ export async function compareUrls({
   onError = (e: unknown) => {
     throw e;
   },
-  createSession = createPuppeteerSession,
+  launchOptions,
+  createSession = () => createPuppeteerSession(launchOptions),
 }: CompareUrlsOptions): Promise<void> {
   if (!fs.existsSync(outDir)) {
     fs.mkdirSync(outDir);
