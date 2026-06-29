@@ -92,12 +92,20 @@ async function captureWithRetry(
   throw new Error("Unexpected error in captureWithRetry");
 }
 
+// Puppeteer's launch options, forwarded verbatim. Consumers pin or relocate
+// Chrome with `executablePath` / `channel` here (or the PUPPETEER_EXECUTABLE_PATH
+// env var, which Puppeteer honours natively). See README "Pinning Chrome".
+export type LaunchOptions = Parameters<typeof puppeteer.launch>[0];
+
 // The Puppeteer-backed capture session: one browser + page with image/script
 // interception, exposing capture() over the seam and close() for teardown.
-export async function createPuppeteerSession(): Promise<CaptureSession> {
+export async function createPuppeteerSession(
+  launchOptions: LaunchOptions = {}
+): Promise<CaptureSession> {
   const browser = await puppeteer.launch({
     headless: true,
     handleSIGINT: true,
+    ...launchOptions,
   });
   try {
     const page = await browser.newPage();
