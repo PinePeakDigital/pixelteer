@@ -2,7 +2,7 @@ import fs from "fs";
 import takeScreenshot from "./saveScreenshot.js";
 import { diff } from "./diff.js";
 import { Page } from "puppeteer";
-import { makeOutPath } from "./makeOutPath.js";
+import { encode } from "./screenshotSet.js";
 
 type Options = {
   page: Page;
@@ -54,9 +54,9 @@ export async function handlePath({
   });
 
   if (diffCount > saveThreshold) {
-    fs.writeFileSync(makeOutPath(path, "1", outDir), buffer1);
-    fs.writeFileSync(makeOutPath(path, "2", outDir), buffer2);
-    fs.writeFileSync(makeOutPath(path, "diff", outDir), diffPng);
+    fs.writeFileSync(`${outDir}/${encode(path, "1")}`, buffer1);
+    fs.writeFileSync(`${outDir}/${encode(path, "2")}`, buffer2);
+    fs.writeFileSync(`${outDir}/${encode(path, "diff")}`, diffPng);
   }
 
   return { path, diff: diffCount, ms: new Date().getTime() - start };
