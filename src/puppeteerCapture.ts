@@ -16,14 +16,17 @@ export function shouldAbort(resourceType: string): boolean {
 // pixels, so the same selectors blank to the same area on both captures. Each
 // selector also hides its descendants (`sel *`) so a child that re-asserts
 // `visibility: visible` can't leak back into the diff when masking a wrapper.
+// One rule per selector (not a single comma-joined list): a CSS selector list
+// is unforgiving, so one malformed entry would otherwise drop the whole rule
+// and disable every mask — separate rules keep a bad selector isolated.
 // Returns "" for no selectors so we skip the style tag entirely.
 // ponytail: hides pixels, not box size — if a masked element's own dimensions
 // differ between the two sites, surrounding layout can still shift. Give it a
 // fixed size in your own CSS if that bites.
 export function maskCss(maskSelectors: string[] = []): string {
-  if (maskSelectors.length === 0) return "";
-  const targets = maskSelectors.flatMap((s) => [s, `${s} *`]);
-  return `${targets.join(", ")} { visibility: hidden !important; }`;
+  return maskSelectors
+    .map((s) => `${s}, ${s} * { visibility: hidden !important; }`)
+    .join("\n");
 }
 
 // Capture one URL, retrying with exponential backoff. Lives behind the capture

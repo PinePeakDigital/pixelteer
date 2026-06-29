@@ -20,9 +20,10 @@ describe("maskCss", () => {
     expect(maskCss([])).toBe("");
   });
 
-  it("hides each selector and its descendants, joined into one rule", () => {
+  it("emits one isolated rule per selector, each hiding its descendants", () => {
     expect(maskCss([".counter", "#clock"])).toBe(
-      ".counter, .counter *, #clock, #clock * { visibility: hidden !important; }"
+      ".counter, .counter * { visibility: hidden !important; }\n" +
+        "#clock, #clock * { visibility: hidden !important; }"
     );
   });
 });
