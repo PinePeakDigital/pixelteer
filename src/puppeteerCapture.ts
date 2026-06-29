@@ -11,9 +11,28 @@ export function shouldAbort(resourceType: string): boolean {
   return resourceType === "image" || resourceType === "script";
 }
 
+// Build the stylesheet that blanks masked regions. `visibility: hidden` keeps
+// each element's box (so layout below it doesn't shift) while removing its
+// pixels, so the same selectors blank to the same area on both captures. Each
+// selector also hides its descendants (`sel *`) so a child that re-asserts
+// `visibility: visible` can't leak back into the diff when masking a wrapper.
+// Returns "" for no selectors so we skip the style tag entirely.
+// ponytail: hides pixels, not box size — if a masked element's own dimensions
+// differ between the two sites, surrounding layout can still shift. Give it a
+// fixed size in your own CSS if that bites.
+export function maskCss(maskSelectors: string[] = []): string {
+  if (maskSelectors.length === 0) return "";
+  const targets = maskSelectors.flatMap((s) => [s, `${s} *`]);
+  return `${targets.join(", ")} { visibility: hidden !important; }`;
+}
+
 // Capture one URL, retrying with exponential backoff. Lives behind the capture
 // seam; the browser/page lifecycle is owned by createPuppeteerSession.
-async function captureWithRetry(page: Page, url: string): Promise<Buffer> {
+async function captureWithRetry(
+  page: Page,
+  url: string,
+  maskSelectors?: string[]
+): Promise<Buffer> {
   let attempt = 0;
   const maxAttempts = 10;
   let delay = 100; // Initial delay in milliseconds
@@ -27,6 +46,9 @@ async function captureWithRetry(page: Page, url: string): Promise<Buffer> {
 
       await page.goto(url);
       await page.addStyleTag({ content: css });
+
+      const mask = maskCss(maskSelectors);
+      if (mask) await page.addStyleTag({ content: mask });
 
       // Use a dynamic delay based on the attempt count
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -90,7 +112,8 @@ export async function createPuppeteerSession(): Promise<CaptureSession> {
     });
 
     return {
-      capture: (url) => captureWithRetry(page, url),
+      capture: (url, maskSelectors) =>
+        captureWithRetry(page, url, maskSelectors),
       close: () => browser.close(),
     };
   } catch (error) {

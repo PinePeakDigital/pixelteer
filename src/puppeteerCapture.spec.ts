@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { shouldAbort } from "./puppeteerCapture.js";
+import { shouldAbort, maskCss } from "./puppeteerCapture.js";
 
 describe("shouldAbort", () => {
   it("aborts images and scripts", () => {
@@ -11,5 +11,18 @@ describe("shouldAbort", () => {
     expect(shouldAbort("document")).toBe(false);
     expect(shouldAbort("stylesheet")).toBe(false);
     expect(shouldAbort("xhr")).toBe(false);
+  });
+});
+
+describe("maskCss", () => {
+  it("returns empty string for no selectors", () => {
+    expect(maskCss()).toBe("");
+    expect(maskCss([])).toBe("");
+  });
+
+  it("hides each selector and its descendants, joined into one rule", () => {
+    expect(maskCss([".counter", "#clock"])).toBe(
+      ".counter, .counter *, #clock, #clock * { visibility: hidden !important; }"
+    );
   });
 });

@@ -13,6 +13,9 @@ export type CompareUrlsOptions = {
   saveThreshold?: number;
   onSuccess?: (data: PathResult & { total: number; current: number }) => void;
   onError?: (e: unknown) => void;
+  // CSS selectors for dynamic regions (live counters, timestamps) to blank on
+  // both captures so they don't read as diffs. Applied to every path.
+  maskSelectors?: string[];
   // The capture backend. Defaults to Puppeteer; tests/alternate backends inject
   // their own session over the capture seam.
   createSession?: CreateCaptureSession;
@@ -37,6 +40,7 @@ export async function compareUrls({
   onError = (e: unknown) => {
     throw e;
   },
+  maskSelectors,
   createSession = createPuppeteerSession,
 }: CompareUrlsOptions): Promise<void> {
   if (!fs.existsSync(outDir)) {
@@ -63,6 +67,7 @@ export async function compareUrls({
         outDir,
         diffThreshold,
         saveThreshold,
+        maskSelectors,
       })
         .then((result) => onSuccess({ ...result, total, current: i + 1 }))
         .catch(onError);
