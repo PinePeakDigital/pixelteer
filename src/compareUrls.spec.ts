@@ -1,7 +1,6 @@
 import pixelmatch from "pixelmatch";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { compareUrls, CompareUrlsOptions } from "./compareUrls.js";
-import readScreenshot from "./readScreenshot.js";
 import resizeImages from "./resizeImages.js";
 import fs from "fs";
 
@@ -17,22 +16,6 @@ async function run(options: Partial<CompareUrlsOptions> = {}) {
 
 describe("puppeteer", () => {
   beforeEach(() => {
-    vi.mocked(readScreenshot)
-      .mockReturnValueOnce({
-        metadata: () => ({
-          width: 1,
-          height: 1,
-        }),
-        toBuffer: () => Buffer.from(""),
-      } as any)
-      .mockReturnValueOnce({
-        metadata: () => ({
-          width: 100,
-          height: 100,
-        }),
-        toBuffer: () => Buffer.from(""),
-      } as any);
-
     vi.mocked(fs.readdirSync).mockReturnValue([]);
   });
 

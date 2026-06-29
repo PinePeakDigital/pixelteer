@@ -1,7 +1,5 @@
-import { describe, it, vi } from "vitest";
+import { describe, it } from "vitest";
 import { takeScreenshots } from "./takeScreenshots.js";
-
-vi.mock("./handleUrl");
 
 describe("takeScreenshots", () => {
   it("runs", async () => {
