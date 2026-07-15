@@ -1,0 +1,79 @@
+name: Release
+# On every merge to main, cut a GitHub release with a prebuilt npm tarball
+# attached, so consumers install pixelteer from the release asset URL (no
+# token, no install-time tsc build). See beeminder/blog#656.
+#
+# Versioning: conventional commits since the last tag decide the bump
+# (feat -> minor, fix -> patch, BREAKING CHANGE -> major; anything else -> patch
+# so every merge still ships). The first release (no tags yet) is v1.0.0 —
+# semver-action needs an existing tag to diff against, so we bypass it then.
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+env:
+  PNPM_VERSION: 10.6.1
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - run: git fetch --prune --tags
+      - id: tags
+        name: Detect existing tags
+        run: echo "latest=$(git tag --list 'v*' --sort=-v:refname | head -n1)" >> "$GITHUB_OUTPUT"
+      - id: semver
+        name: Compute bump from conventional commits
+        if: steps.tags.outputs.latest != ''
+        uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1.11.0
+        with:
+          token: ${{ github.token }}
+          branch: main
+          noVersionBumpBehavior: patch # release on every merge, not just feat/fix
+          skipInvalidTags: true
+      - id: version
+        name: Resolve next version
+        env:
+          LATEST: ${{ steps.tags.outputs.latest }}
+          BUMPED: ${{ steps.semver.outputs.next }}
+        run: |
+          if [ -z "$LATEST" ]; then
+            next=v1.0.0 # first release; no tag for semver-action to diff against
+          else
+            next="$BUMPED"
+          fi
+          echo "next=$next" >> "$GITHUB_OUTPUT"
+          echo "Next release: $next"
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .nvmrc
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - name: Pack tarball named for the release tag
+        env:
+          VERSION: ${{ steps.version.outputs.next }}
+        run: |
+          # Stamp the release version into the manifest so the packed tarball's
+          # embedded version matches the tag (pnpm pack reads package.json).
+          npm pkg set version="${VERSION#v}"
+          pnpm pack # respects files:[dist]; produces pixelteer-${VERSION#v}.tgz
+          src=$(ls pixelteer-*.tgz)
+          dest="pixelteer-${VERSION#v}.tgz"
+          # Belt-and-suspenders: pack now names it by the tag, but keep the
+          # rename guard in case the version stamp ever no-ops.
+          [ "$src" = "$dest" ] || mv "$src" "$dest"
+      - name: Create release with tarball
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.next }}
+        run: gh release create "$VERSION" "pixelteer-${VERSION#v}.tgz" --title "$VERSION" --generate-notes

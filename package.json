@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "files": ["dist"],
   "packageManager": "pnpm@10.6.1",
   "scripts": {
     "test": "vitest",
