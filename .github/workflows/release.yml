@@ -21,9 +21,10 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           fetch-depth: 0
+          persist-credentials: false
       - run: git fetch --prune --tags
       - id: tags
         name: Detect existing tags
@@ -31,7 +32,7 @@ jobs:
       - id: semver
         name: Compute bump from conventional commits
         if: steps.tags.outputs.latest != ''
-        uses: ietf-tools/semver-action@v1
+        uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1.11.0
         with:
           token: ${{ github.token }}
           branch: main
@@ -50,10 +51,10 @@ jobs:
           fi
           echo "next=$next" >> "$GITHUB_OUTPUT"
           echo "Next release: $next"
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .nvmrc
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
         with:
           version: ${{ env.PNPM_VERSION }}
       - run: pnpm install --frozen-lockfile
@@ -62,11 +63,14 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.next }}
         run: |
-          pnpm pack # respects files:[dist]; produces pixelteer-<package.json version>.tgz
+          # Stamp the release version into the manifest so the packed tarball's
+          # embedded version matches the tag (pnpm pack reads package.json).
+          npm pkg set version="${VERSION#v}"
+          pnpm pack # respects files:[dist]; produces pixelteer-${VERSION#v}.tgz
           src=$(ls pixelteer-*.tgz)
           dest="pixelteer-${VERSION#v}.tgz"
-          # Align the asset name with the release tag. Skip when pack already
-          # named it right (package.json version == tag) — mv onto itself errors.
+          # Belt-and-suspenders: pack now names it by the tag, but keep the
+          # rename guard in case the version stamp ever no-ops.
           [ "$src" = "$dest" ] || mv "$src" "$dest"
       - name: Create release with tarball
         env:
