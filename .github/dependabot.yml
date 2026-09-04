@@ -13,6 +13,13 @@ updates:
       npm-security:
         applies-to: security-updates
         patterns: ["*"]
+    ignore:
+      # typescript-eslint does not support TypeScript 7 (it errors out entirely:
+      # "typescript-eslint does not support TS 7.0"). Holding the major until
+      # https://github.com/typescript-eslint/typescript-eslint/issues/10940 lands,
+      # otherwise every grouped npm PR is dead on arrival at `pnpm lint`.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
