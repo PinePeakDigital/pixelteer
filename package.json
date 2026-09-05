@@ -22,7 +22,7 @@
   "author": "",
   "license": "MIT",
   "peerDependencies": {
-    "puppeteer": "^22.6.5"
+    "puppeteer": "^22.6.5 || ^23.0.0 || ^24.0.0 || ^25.0.0"
   },
   "dependencies": {
     "pixelmatch": "^7.2.0",

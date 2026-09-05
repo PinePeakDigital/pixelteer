@@ -29,9 +29,10 @@ createReport({
 
 `pixelteer` drives Chrome through `puppeteer`, which is a **peer dependency** —
 you install it, and on install it downloads the exact Chrome build it pins (for
-`puppeteer@22.6.5` that is **Chrome 123.0.6312.122**). That download is the
-deterministic browser; as long as `puppeteer` resolves to a single version,
-local and CI get the same Chrome.
+example, `puppeteer@25.10.0` pins **Chrome 152.0.7977.75**; each puppeteer
+version pins its own Chrome build). That download is the deterministic
+browser; as long as `puppeteer` resolves to a single version, local and CI get
+the same Chrome.
 
 Trouble shows up when the pinned build isn't actually present — e.g. you use
 `puppeteer-core` (no bundled download), a lockfile drift leaves two puppeteer

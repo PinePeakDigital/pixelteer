@@ -71,12 +71,14 @@ async function captureWithRetry(
         clearTimeout(timeoutId);
       }
 
-      const buffer = await page.screenshot({
+      const screenshot = await page.screenshot({
         fullPage: true,
         optimizeForSpeed: true,
       });
 
-      return buffer; // Successful capture, return the buffer
+      // Puppeteer 23+ returns Uint8Array instead of Buffer; the capture seam
+      // promises Buffer (consumed by pixelmatch/pngjs), so wrap it.
+      return Buffer.from(screenshot); // Successful capture, return the buffer
     } catch (error: unknown) {
       attempt++;
       if (attempt >= maxAttempts) {
