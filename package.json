@@ -28,14 +28,14 @@
     "pixelmatch": "^7.2.0",
     "pngjs": "^7.0.0",
     "sharp": "^0.35.4",
-    "tsx": "^4.23.12",
+    "tsx": "^4.23.13",
     "typescript": "^5.9.3"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/inquirer": "^9.0.10",
     "@types/mustache": "^4.2.6",
-    "@types/node": "^26.4.0",
+    "@types/node": "^26.4.1",
     "@types/pa11y": "^5.3.7",
     "@types/pixelmatch": "^5.2.6",
     "@types/pngjs": "^6.0.5",
@@ -43,9 +43,9 @@
     "@types/yargs": "^17.0.35",
     "depcheck": "^1.4.7",
     "eslint": "^10.9.1",
-    "globals": "^17.11.0",
-    "typescript-eslint": "^8.68.0",
-    "vite": "^6.4.3",
+    "globals": "^17.12.0",
+    "typescript-eslint": "^8.69.0",
+    "vite": "^8.2.2",
     "vitest": "^4.1.11"
   },
   "pnpm": {
