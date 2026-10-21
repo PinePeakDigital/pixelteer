@@ -35,7 +35,7 @@
     "@eslint/js": "^10.0.1",
     "@types/inquirer": "^9.0.10",
     "@types/mustache": "^4.2.6",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.5",
     "@types/pa11y": "^5.3.7",
     "@types/pixelmatch": "^7.1.0",
     "@types/pngjs": "^6.0.5",
@@ -44,9 +44,9 @@
     "depcheck": "^1.4.7",
     "eslint": "^10.12.0",
     "globals": "^17.13.0",
-    "typescript-eslint": "^8.71.1",
-    "vite": "^8.3.3",
-    "vitest": "^5.0.3"
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.4"
   },
   "pnpm": {
     "overrides": {
