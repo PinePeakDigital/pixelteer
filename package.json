@@ -35,18 +35,18 @@
     "@eslint/js": "^10.0.1",
     "@types/inquirer": "^9.0.10",
     "@types/mustache": "^4.2.6",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.5",
     "@types/pa11y": "^5.3.7",
     "@types/pixelmatch": "^7.1.0",
     "@types/pngjs": "^6.0.5",
     "@types/xml2js": "^0.4.14",
     "@types/yargs": "^17.0.35",
     "depcheck": "^1.4.7",
-    "eslint": "^10.12.0",
+    "eslint": "^10.13.0",
     "globals": "^17.13.0",
-    "typescript-eslint": "^8.71.1",
-    "vite": "^8.3.3",
-    "vitest": "^5.0.3"
+    "typescript-eslint": "^8.72.0",
+    "vite": "^8.3.4",
+    "vitest": "^5.0.5"
   },
   "pnpm": {
     "overrides": {
