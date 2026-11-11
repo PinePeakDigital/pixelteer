@@ -32,7 +32,7 @@ jobs:
       - id: semver
         name: Compute bump from conventional commits
         if: steps.tags.outputs.latest != ''
-        uses: ietf-tools/semver-action@c90370b2958652d71c06a3484129a4d423a6d8a8 # v1.11.0
+        uses: ietf-tools/semver-action@46feaa27e7375da0e3d602721e9fb9573598b880 # v1.12.0
         with:
           token: ${{ github.token }}
           branch: main
@@ -54,7 +54,7 @@ jobs:
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc
-      - uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
         with:
           version: ${{ env.PNPM_VERSION }}
       - run: pnpm install --frozen-lockfile
