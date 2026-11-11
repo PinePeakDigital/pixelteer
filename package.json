@@ -33,20 +33,20 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/inquirer": "^9.0.10",
+    "@types/inquirer": "^10.0.0",
     "@types/mustache": "^4.2.6",
-    "@types/node": "^26.6.4",
+    "@types/node": "^26.6.6",
     "@types/pa11y": "^5.3.7",
     "@types/pixelmatch": "^7.1.0",
     "@types/pngjs": "^6.0.5",
     "@types/xml2js": "^0.4.14",
     "@types/yargs": "^17.0.35",
     "depcheck": "^1.4.7",
-    "eslint": "^10.12.0",
-    "globals": "^17.13.0",
-    "typescript-eslint": "^8.71.1",
-    "vite": "^8.3.3",
-    "vitest": "^5.0.3"
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.1.0"
   },
   "pnpm": {
     "overrides": {
